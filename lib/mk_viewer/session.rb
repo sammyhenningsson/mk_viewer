@@ -71,23 +71,23 @@ module MkViewer
       @thread&.join(1)
     end
 
-    def view
+    def view(highlight: true)
       @lock.synchronize do
         now = @clock.call
         @released.delete_if { |_, time| now - time > LINGER }
         names = @keymap ? @keymap.layers.map(&:name) : []
         View.new(title: profile.name, transport: device.transport, layer: @layer, layer_names: names,
-                 keys: view_keys(now), message: @keymap ? nil : @keymap_error || "Loading keymap…")
+                 keys: view_keys(now, highlight), message: @keymap ? nil : @keymap_error || "Loading keymap…")
       end
     end
 
     private
 
-    def view_keys(now)
+    def view_keys(now, highlight)
       profile.layout.keys.each_with_index.map do |geometry, position|
         key, inherited = @keymap ? @keymap.resolve(@layer, position) : [Keymap::TRANSPARENT, false]
         ViewKey.new(x: geometry.x, y: geometry.y, legend: key.legend.to_s, hold: key.hold.to_s, inherited: inherited,
-                    heat: heat(position, now))
+                    heat: highlight ? heat(position, now) : 0.0)
       end
     end
 

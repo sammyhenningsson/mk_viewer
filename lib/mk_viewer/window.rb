@@ -20,11 +20,18 @@ module MkViewer
 
     private
 
+    # Widgets are kept in instance variables on purpose. Ruby can garbage collect
+    # a widget's wrapper while GTK still shows the widget, and that silently drops
+    # its signal handlers.
     def build(application)
-      area = Gtk::DrawingArea.new
-      window = Gtk::ApplicationWindow.new(application)
+      # Launching the app again re-activates this running instance.
+      return @window.present if @window
+
+      area = @area = Gtk::DrawingArea.new
+      window = @window = Gtk::ApplicationWindow.new(application)
       window.title = "Keyboard layers"
       window.set_default_size(980, 460)
+      window.titlebar = build_header
       window.child = area
       renderer = nil
 
@@ -44,9 +51,25 @@ module MkViewer
       window.present
     end
 
+    def build_header
+      @highlight_switch = Gtk::Switch.new
+      @highlight_switch.active = true
+      @highlight_switch.valign = :center
+      # Not focusable, so pressing Space or Enter while testing keys can't flip it.
+      @highlight_switch.focusable = false
+
+      box = Gtk::Box.new(:horizontal, 8)
+      box.append(Gtk::Label.new("Highlight keys"))
+      box.append(@highlight_switch)
+
+      header = Gtk::HeaderBar.new
+      header.pack_start(box)
+      header
+    end
+
     def tick(area, window)
       current = @manager.current
-      view = current&.view
+      view = current&.view(highlight: @highlight_switch.active?)
       others = @manager.sessions.reject { |s| s.equal?(current) }.map { |s| s.profile.name }.uniq
       problem = @manager.problem
       return if view == @view && others == @others && problem == @problem

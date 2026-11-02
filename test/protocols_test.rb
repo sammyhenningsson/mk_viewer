@@ -69,6 +69,13 @@ class ProtocolsTest < Minitest::Test
     assert_equal 2, s.layer
   end
 
+  def test_view_can_leave_out_highlight
+    s = voyager_session
+    s.receive(report(6, 0, 6, 0xFE))
+    assert_equal [0.0, 0.0], s.view(highlight: false).keys.map(&:heat)
+    assert_equal [0.0, 1.0], s.view.keys.map(&:heat), "the key is still tracked while hidden"
+  end
+
   def test_view_shows_layer_names
     s = zmk_session
     s.receive([1, 0, 1, 0, 0, 0, 0, 0, 0])
