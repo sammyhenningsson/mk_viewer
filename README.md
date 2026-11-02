@@ -40,6 +40,21 @@ Exact highlighting would need firmware that also reports positions.
 
 ## Adding a keyboard
 
+### ZMK keyboards
+
+The first time a ZMK keyboard connects, the app asks which keymap file it uses,
+and remembers the answer in `~/.config/mk_viewer/zmk_keyboards.yml`. The
+**Keymap…** button in the title bar changes it later, for any ZMK keyboard.
+
+Keyboards are recognised by ZMK's default USB IDs (`1D50:615E`), so a board that
+changes them needs a config entry as below. Without one of the firmware options
+in the table above, the layer stays on the first one, though keys still highlight.
+
+The app draws such a keyboard as a plain grid, worked out from how the bindings
+are arranged in the file. For real positions and legends, add a config entry.
+
+### Config entries
+
 Add an entry to `config/keyboards.yml`, or copy that file to
 `~/.config/mk_viewer/keyboards.yml` (it then replaces the bundled one, and its
 `layout:` paths resolve relative to it):

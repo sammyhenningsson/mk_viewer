@@ -2,6 +2,7 @@
 
 require "gtk4"
 require_relative "renderer"
+require_relative "keymap_dialog"
 
 module MkViewer
   # The GTK window. Polls the manager and redraws only when the picture changes.
@@ -78,8 +79,14 @@ module MkViewer
       box.append(Gtk::Label.new("Highlight keys"))
       box.append(@highlight_switch)
 
+      @keymap_button = Gtk::Button.new(label: "Keymap…")
+      @keymap_button.tooltip_text = "Choose the keymap file for this keyboard"
+      @keymap_button.focusable = false
+      @keymap_button.signal_connect("clicked") { change_keymap }
+
       header = Gtk::HeaderBar.new
       header.pack_start(box)
+      header.pack_end(@keymap_button)
       header
     end
 
@@ -103,10 +110,37 @@ module MkViewer
 
     def settings = @settings ||= Gtk::Settings.default
 
+    def ask_about_new_keyboard
+      return if @dialog
+
+      device = @manager.next_unconfigured or return
+      @dialog = KeymapDialog.new(@window, keyboard: KeyboardStore.display_name(device.name), first_time: true) do |answer, path|
+        @dialog = nil
+        case answer
+        when :use then @manager.assign(device, path)
+        when :never then @manager.ignore(device)
+        else @manager.dismiss(device)
+        end
+      end
+    end
+
+    def change_keymap
+      session = @manager.current
+      return if @dialog || !session || session.profile.keymap["type"] != "zmk"
+
+      @dialog = KeymapDialog.new(@window, keyboard: session.profile.name, first_time: false,
+                                          path: session.profile.keymap["path"]) do |answer, path|
+        @dialog = nil
+        @manager.assign(session.device, path) if answer == :use
+      end
+    end
+
     def tick(area, window)
       area.queue_draw if follow_system_theme
+      ask_about_new_keyboard
 
       current = @manager.current
+      @keymap_button.sensitive = current&.profile&.keymap&.fetch("type") == "zmk"
       view = current&.view(highlight: @highlight_switch.active?)
       others = @manager.sessions.reject { |s| s.equal?(current) }.map { |s| s.profile.name }.uniq
       problem = @manager.problem

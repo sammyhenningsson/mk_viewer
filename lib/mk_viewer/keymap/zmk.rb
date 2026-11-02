@@ -7,11 +7,17 @@ module MkViewer
     # Reads the parts of a ZMK .keymap that a viewer needs. This isn't a devicetree
     # compiler: it handles #defines, behavior declarations and the keymap node.
     class Zmk
+      BINDING_START = /&?\w+(?:\((?:[^()]|\([^()]*\))*\))?/
+
       # Optional labels: a keymap-drawer config, whose raw_binding_map is reused
       # so legends match the rendered layer images.
       def self.load(path, labels: nil)
         new(File.read(path), labels: labels && File.exist?(labels) ? File.read(labels) : nil).map
       end
+
+      # Key positions [x, y] for a keyboard with no layout file, from how the first
+      # layer's bindings are arranged in the file. It can't know the real stagger.
+      def self.geometry(path) = new(File.read(path)).geometry
 
       def initialize(source, labels: nil)
         @text = strip_comments(source)
@@ -28,7 +34,48 @@ module MkViewer
         Map.new(raw.map { |name, bindings| Layer.new(name, tokenize(bindings).map { |b| build(b) }) })
       end
 
+      def geometry
+        bindings = read_layers.first&.last or raise Error, "no layers found"
+        rows = bindings.lines.map { |line| binding_offsets(line) }.reject(&:empty?)
+        return grid(tokenize(bindings).size) unless rows.sum(&:size) == tokenize(bindings).size
+
+        reference = rows.max_by(&:size)
+        columns = column_positions(reference)
+        rows.each_with_index.flat_map do |offsets, y|
+          previous = -1
+          offsets.each_with_index.map do |offset, index|
+            room = reference.size - (offsets.size - index)
+            previous = ((previous + 1)..room).min_by { |column| (reference[column] - offset).abs }
+            [columns[previous], y.to_f]
+          end
+        end
+      end
+
       private
+
+      # Where each binding starts on a line.
+      def binding_offsets(line)
+        text = line.gsub("\t", "    ")
+        offsets = []
+        text.scan(BINDING_START) { offsets << Regexp.last_match.begin(0) if binding_start?(Regexp.last_match[0]) }
+        offsets
+      end
+
+      def binding_start?(word) = word.start_with?("&") || (word.include?("(") && @macros.key?(word[/\A\w+/]))
+
+      # One key width apart, plus a gap where the text has an unusually wide one:
+      # that's normally the space between the halves of a split keyboard.
+      def column_positions(reference)
+        gaps = reference.each_cons(2).map { |a, b| b - a }
+        typical = gaps.sort[gaps.size / 2] || 1
+        widest = gaps.max || 0
+        split = widest > typical * 1.6 ? gaps.index(widest) : nil
+        reference.each_index.map { |index| split && index > split ? index + 1.0 : index.to_f }
+      end
+
+      def grid(count)
+        Array.new(count) { |index| [(index % 10).to_f, (index / 10).to_f] }
+      end
 
       def strip_comments(source)
         source.gsub(%r{/\*.*?\*/}m, "").gsub(%r{//[^\n]*}, "").gsub(/\\\n/, " ")
@@ -90,9 +137,9 @@ module MkViewer
 
       # Splits a bindings list into strings like "&HML LSHIFT R" or "CAP(J)".
       def tokenize(text)
-        words = text.scan(/&?\w+(?:\((?:[^()]|\([^()]*\))*\))?/)
+        words = text.scan(BINDING_START)
         words.each_with_object([]) do |word, bindings|
-          if word.start_with?("&") || (word.include?("(") && @macros.key?(word[/\A\w+/]))
+          if binding_start?(word)
             bindings << word
           elsif bindings.empty?
             raise Error, "unexpected token #{word.inspect} in bindings"
