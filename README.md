@@ -4,8 +4,9 @@ A small GTK4 desktop app, written in Ruby, that shows your keyboard's current
 layer and lights up the keys you press. It recognises each keyboard by its
 Bluetooth name or USB IDs and shows that keyboard's own keymap. With several
 connected, it shows whichever you used last. The **Highlight keys** switch in the
-title bar turns the highlighting on and off.
+title bar, or the T key, turns the highlighting on and off.
 Light and dark mode follow your system setting.
+Press Ctrl+Q to quit.
 
 ## Run
 

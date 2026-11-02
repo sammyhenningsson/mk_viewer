@@ -33,6 +33,7 @@ module MkViewer
       window.set_default_size(980, 460)
       window.titlebar = build_header
       window.child = area
+      add_shortcuts(application)
       follow_system_theme
 
       area.set_draw_func do |_widget, cr, width, height|
@@ -48,6 +49,22 @@ module MkViewer
         false
       end
       window.present
+    end
+
+    def add_shortcuts(application)
+      @actions = []
+      add_shortcut(application, "quit", "<Control>q") { application.quit }
+      add_shortcut(application, "toggle-highlight", "t") do
+        @highlight_switch.active = !@highlight_switch.active?
+      end
+    end
+
+    def add_shortcut(application, name, accelerator, &handler)
+      action = Gio::SimpleAction.new(name)
+      action.signal_connect("activate", &handler)
+      application.add_action(action)
+      application.set_accels_for_action("app.#{name}", [accelerator])
+      @actions << action
     end
 
     def build_header
