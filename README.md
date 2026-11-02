@@ -5,6 +5,7 @@ layer and lights up the keys you press. It recognises each keyboard by its
 Bluetooth name or USB IDs and shows that keyboard's own keymap. With several
 connected, it shows whichever you used last. The **Highlight keys** switch in the
 title bar turns the highlighting on and off.
+Light and dark mode follow your system setting.
 
 ## Run
 
@@ -13,7 +14,7 @@ title bar turns the highlighting on and off.
     bin/mk_viewer --list   # the HID devices it sees, and how each one matches
     bundle exec rake test
 
-Needs Ruby, GTK 4 and read/write access to `/dev/hidraw*`. A permission error
+Needs Ruby, GTK 4.20 or newer (for the system light/dark setting) and read/write access to `/dev/hidraw*`. A permission error
 appears in the window; fix it with a udev rule (see `/etc/udev/rules.d/`).
 
 ## Supported protocols

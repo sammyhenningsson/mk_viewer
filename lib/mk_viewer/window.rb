@@ -33,11 +33,10 @@ module MkViewer
       window.set_default_size(980, 460)
       window.titlebar = build_header
       window.child = area
-      renderer = nil
+      follow_system_theme
 
-      area.set_draw_func do |widget, cr, width, height|
-        renderer ||= Renderer.new(dark: dark?(widget))
-        renderer.draw(cr, width, height, @view, connected: @others || [], problem: @problem)
+      area.set_draw_func do |_widget, cr, width, height|
+        @renderer.draw(cr, width, height, @view, connected: @others || [], problem: @problem)
       end
 
       GLib::Timeout.add(TICK_MS) do
@@ -67,7 +66,29 @@ module MkViewer
       header
     end
 
+    # GTK keeps this setting in sync with the desktop's light/dark preference, but
+    # plain GTK doesn't always restyle itself to match: a theme name like "Adw-dark"
+    # only exists with libadwaita, and GTK falls back to its light theme. So the
+    # setting is applied to the window frame here, as well as the drawing.
+    def follow_system_theme
+      dark = system_dark?
+      return false if dark == @dark
+
+      @dark = dark
+      @renderer = Renderer.new(dark: dark)
+      settings.gtk_application_prefer_dark_theme = dark
+      true
+    end
+
+    def system_dark?
+      settings.get_property("gtk-interface-color-scheme").nick == "dark"
+    end
+
+    def settings = @settings ||= Gtk::Settings.default
+
     def tick(area, window)
+      area.queue_draw if follow_system_theme
+
       current = @manager.current
       view = current&.view(highlight: @highlight_switch.active?)
       others = @manager.sessions.reject { |s| s.equal?(current) }.map { |s| s.profile.name }.uniq
@@ -79,13 +100,6 @@ module MkViewer
       @others = others
       window.title = view ? "#{view.title} — #{view.layer_names[view.layer] || "Layer #{view.layer}"}" : "Keyboard layers"
       area.queue_draw
-    end
-
-    def dark?(widget)
-      color = widget.color
-      color.red * 0.3 + color.green * 0.6 + color.blue * 0.1 > 0.5
-    rescue NoMethodError
-      true
     end
   end
 end
