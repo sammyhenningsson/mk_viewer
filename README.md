@@ -35,6 +35,9 @@ out from the keymap. As a result:
 - Adaptive keys and macros light the key for what they typed, not the key you pressed.
 - If a keycode is on the layer twice, both keys light.
 - The layer shows as the first layer until the first report after the app starts.
+- Only the top layer is reported, so transparent keys are a best guess: they show the
+  lowest layer that holds or toggles this one (then that layer's own, down to the base),
+  even if you actually got there from a different layer.
 
 Exact highlighting would need firmware that also reports positions.
 
@@ -69,6 +72,11 @@ Add an entry to `config/keyboards.yml`, or copy that file to
         type: zmk
         path: ~/Development/corne/config/corne_choc_pro.keymap
         labels: ~/path/to/keymap-drawer.yaml   # optional legends
+
+`labels:` is a [keymap-drawer](https://github.com/caksoylar/keymap-drawer) config.
+Each `raw_binding_map` entry is either a string or `{t: tap, h: hold, s: shifted}`.
+`s` is drawn at the top of the key in the accent color, which suits a key's adaptive
+rules: `"&AS_D": {t: "D", s: "S→C H→Å"}`.
 
 A layout lists `x`/`y` for each key in keymap order, in key-width units. Oryx
 boards also need `matrix: [row, col]` and `oryx:` (the key's index in Oryx's data).

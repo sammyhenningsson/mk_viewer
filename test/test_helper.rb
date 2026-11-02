@@ -46,7 +46,7 @@ module Fixtures
       raw_binding_map:
         "&kp SE_AT": "@"
         "&kp SE_LPAR": "("
-        "&AS_E": {t: "E!", h: "RSHIFT"}
+        "&AS_E": {t: "E!", h: "RSHIFT", s: "U→O"}
   YAML
 
   def self.map = MkViewer::Keymap::Zmk.new(KEYMAP, labels: LABELS).map

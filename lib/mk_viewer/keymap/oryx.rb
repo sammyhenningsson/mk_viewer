@@ -87,7 +87,19 @@ module MkViewer
 
       private
 
+      # Actions that leave the layer below active, unlike TO.
+      ACTIVATING = %w[MO OSL TG].freeze
+
       def build(key)
+        built = describe(key)
+        return built if built.transparent
+
+        action = [key["hold"], key["tap"]].compact.find { |part| ACTIVATING.include?(part["code"]) }
+        built.activates = @layers.index { |layer| layer["position"] == action["layer"] } if action
+        built
+      end
+
+      def describe(key)
         tap = key["tap"]
         hold = key["hold"]
         custom = key["customLabel"] || key["emoji"]

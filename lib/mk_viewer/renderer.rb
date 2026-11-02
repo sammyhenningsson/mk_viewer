@@ -19,6 +19,8 @@ module MkViewer
     MARGIN = 20
     HEADER = 68
     PILL_ROW = 28
+    SHIFTED_MAX = 0.5 # the most of a key's height its shifted text may take, at the top
+    SHIFTED_MAX_WITH_HOLD = 0.3 # the same, when the key also has a hold legend to fit
 
     def initialize(dark: true)
       @palette = dark ? DARK : LIGHT
@@ -114,12 +116,33 @@ module MkViewer
 
       lit = key.heat > 0.5
       paint(cr, lit ? @palette.on_accent : key.inherited ? @palette.muted : @palette.text)
-      legend_h = key.hold.empty? ? size : size * 0.68
-      fit(cr, key.legend, x, y, size, legend_h, unit * 0.27, bold: !key.inherited)
-      return if key.hold.empty?
+      room = size * (key.hold.empty? ? SHIFTED_MAX : SHIFTED_MAX_WITH_HOLD)
+      shifted = key.shifted.empty? ? nil : wrapped(cr, key.shifted, size * 0.92, room, unit * 0.15)
+      legend_top = shifted ? size * 0.05 + shifted.pixel_size[1] : 0.0
+      legend_bottom = key.hold.empty? ? size : size * 0.68
+      fit(cr, key.legend, x, y + legend_top, size, legend_bottom - legend_top, unit * 0.27, bold: !key.inherited)
+      unless key.hold.empty?
+        paint(cr, lit ? @palette.on_accent : @palette.muted)
+        fit(cr, key.hold, x, y + size * 0.64, size, size * 0.3, unit * 0.13)
+      end
+      return unless shifted
 
-      paint(cr, lit ? @palette.on_accent : @palette.muted)
-      fit(cr, key.hold, x, y + size * 0.64, size, size * 0.3, unit * 0.13)
+      paint(cr, lit ? @palette.on_accent : @palette.accent)
+      place(cr, shifted, x + size * 0.04, y + size * 0.05)
+    end
+
+    # A centered layout that wraps between words, shrunk until it fits the box.
+    def wrapped(cr, string, width, height, size)
+      layout = nil
+      size.step(1, -0.5) do |candidate|
+        layout = pango(cr, string, candidate, false)
+        layout.width = width * Pango::SCALE
+        layout.wrap = :word
+        layout.alignment = :center
+        text_w, text_h = layout.pixel_size
+        break if text_w <= width && text_h <= height
+      end
+      layout
     end
 
     # Centers text in a box, shrinking it to fit the width.

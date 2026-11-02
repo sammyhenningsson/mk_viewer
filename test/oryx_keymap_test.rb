@@ -19,6 +19,7 @@ class OryxKeymapTest < Minitest::Test
     assert_equal %w[Base Nav], map.layers.map(&:name)
     assert_equal "Save", map.layers[0].keys[0].legend
     assert_equal %w[N Nav], [map.layers[0].keys[1].legend, map.layers[0].keys[1].hold]
+    assert_equal 1, map.layers[0].keys[1].activates
     assert_equal "Ctrl W", map.layers[1].keys[0].legend
     assert map.layers[1].keys[1].transparent
   end

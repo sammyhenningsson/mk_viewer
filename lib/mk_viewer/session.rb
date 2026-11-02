@@ -10,7 +10,7 @@ module MkViewer
     PROTOCOLS = { "oryx" => Protocols::Oryx, "zmk_layer_status" => Protocols::ZmkLayerStatus }.freeze
     LINGER = 0.22 # seconds a key stays lit after release: tap-holds send press and release together
 
-    ViewKey = Struct.new(:x, :y, :legend, :hold, :inherited, :heat, keyword_init: true)
+    ViewKey = Struct.new(:x, :y, :legend, :hold, :shifted, :inherited, :heat, keyword_init: true)
     View = Struct.new(:title, :transport, :layer, :layer_names, :keys, :message, keyword_init: true)
 
     attr_reader :profile, :device, :error, :last_activity
@@ -86,8 +86,8 @@ module MkViewer
     def view_keys(now, highlight)
       profile.layout.keys.each_with_index.map do |geometry, position|
         key, inherited = @keymap ? @keymap.resolve(@layer, position) : [Keymap::TRANSPARENT, false]
-        ViewKey.new(x: geometry.x, y: geometry.y, legend: key.legend.to_s, hold: key.hold.to_s, inherited: inherited,
-                    heat: highlight ? heat(position, now) : 0.0)
+        ViewKey.new(x: geometry.x, y: geometry.y, legend: key.legend.to_s, hold: key.hold.to_s, shifted: key.shifted.to_s,
+                    inherited: inherited, heat: highlight ? heat(position, now) : 0.0)
       end
     end
 

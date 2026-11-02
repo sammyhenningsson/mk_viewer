@@ -44,11 +44,44 @@ class ZmkKeymapTest < Minitest::Test
     assert_nil @nav[5].usage, "media keys aren't in the keyboard report"
   end
 
+  def test_shifted_label
+    assert_equal "U→O", @base[3].shifted
+    assert_nil @base[0].shifted
+  end
+
   def test_transparent_resolves_downward
     key, inherited = @map.resolve(1, 0)
     assert_equal "A", key.legend
     assert inherited
     assert_equal [false], @map.resolve(1, 1).last(1)
+  end
+
+  def test_transparent_falls_through_the_layer_that_activates_it
+    map = MkViewer::Keymap::Zmk.new(<<~DTS).map
+      #define L_MOUSE 1
+      #define L_ALPHA 2
+      #define L_FAST 3
+      #define L_FUNC 4
+      / {
+        behaviors {
+          LT_TH: LT_TH { compatible = "zmk,behavior-hold-tap"; bindings = <&mo>, <&kp>; };
+          AS_W: AS_W { compatible = "zmk,behavior-adaptive-key"; bindings = <&lt L_ALPHA W>; };
+        };
+        keymap {
+          base { bindings = <&kp A  &LT_TH L_MOUSE B  &AS_W  &kp D>; };
+          mouse { bindings = <&kp E  &kp F  &mo L_FAST  &to L_FUNC>; };
+          alpha { bindings = <&trans  &trans  &kp G  &trans>; };
+          fast { bindings = <&trans  &trans  &trans  &trans>; };
+          func { bindings = <&trans  &trans  &trans  &trans>; };
+        };
+      };
+    DTS
+
+    assert_equal [2, 0], map.stack(2), "held from an adaptive key on base, so it skips the mouse layer"
+    assert_equal "A", map.resolve(2, 0).first.legend
+    assert_equal [3, 1, 0], map.stack(3), "held from the mouse layer, which is held from base"
+    assert_equal "E", map.resolve(3, 0).first.legend
+    assert_equal [4, 0], map.stack(4), "`to` replaces the layer it's pressed on"
   end
 
   def test_none_stops_transparency

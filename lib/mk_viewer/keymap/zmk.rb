@@ -167,6 +167,7 @@ module MkViewer
           key.dup.tap do |k|
             k.legend = label["t"].to_s if label["t"]
             k.hold = Keycodes.label(label["h"].to_s) if label["h"]
+            k.shifted = label["s"].to_s if label["s"]
           end
         else key
         end
@@ -182,11 +183,11 @@ module MkViewer
         when "trans" then TRANSPARENT
         when "none" then Key.new
         when "kp" then tap_key(args.first)
-        when "mo" then Key.new(legend: layer_label(args.first))
+        when "mo" then Key.new(legend: layer_label(args.first), activates: layer_index(args.first))
         when "to" then Key.new(legend: "→ #{layer_label(args.first)}")
-        when "tog" then Key.new(legend: "⇄ #{layer_label(args.first)}")
-        when "sl" then Key.new(legend: "1× #{layer_label(args.first)}")
-        when "lt" then tap_key(args[1]).tap { |k| k.hold = layer_label(args[0]) }
+        when "tog" then Key.new(legend: "⇄ #{layer_label(args.first)}", activates: layer_index(args.first))
+        when "sl" then Key.new(legend: "1× #{layer_label(args.first)}", activates: layer_index(args.first))
+        when "lt" then with_hold(tap_key(args[1]), "mo", args[0])
         when "mt" then with_hold(tap_key(args[1]), "kp", args[0])
         when "caps_word" then Key.new(legend: "CapsWord")
         when "bt" then Key.new(legend: args.map { |a| Keycodes.label(a) }.join(" "))
@@ -206,7 +207,9 @@ module MkViewer
           code = Keycodes.parse(expand(argument))
           key.hold = param_label(argument)
           key.hold_mods = code.mods if code.usage.nil?
-        when "mo" then key.hold = layer_label(argument)
+        when "mo"
+          key.hold = layer_label(argument)
+          key.activates = layer_index(argument)
         when "to" then key.hold = "→ #{layer_label(argument)}"
         else key.hold = behavior
         end
@@ -231,9 +234,11 @@ module MkViewer
       end
 
       def layer_label(argument)
-        index = Integer(expand(argument), exception: false)
+        index = layer_index(argument)
         index ? @layer_names[index] || "Layer #{index}" : argument
       end
+
+      def layer_index(argument) = Integer(expand(argument), exception: false)
     end
   end
 end
