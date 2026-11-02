@@ -1,316 +1,317 @@
 # From zsa/qmk_firmware keyboards/zsa/voyager/keyboard.json (firmware25).
 # `oryx` is the index of the same key in Oryx's layout data.
 # The right half is moved 1.8 keys inwards to narrow the gap on screen.
+# Column stagger is halved from the true values to make the keys easier to read.
 ---
 keys:
 - x: 0
-  "y": 0.5
+  "y": 0.25
   matrix:
   - 0
   - 1
   oryx: 0
 - x: 1
-  "y": 0.5
+  "y": 0.25
   matrix:
   - 0
   - 2
   oryx: 1
 - x: 2
-  "y": 0.25
+  "y": 0.125
   matrix:
   - 0
   - 3
   oryx: 2
 - x: 3
-  "y": 0
+  "y": 0.0
   matrix:
   - 0
   - 4
   oryx: 3
 - x: 4
-  "y": 0.25
+  "y": 0.125
   matrix:
   - 0
   - 5
   oryx: 4
 - x: 5
-  "y": 0.5
+  "y": 0.25
   matrix:
   - 0
   - 6
   oryx: 5
 - x: 8.2
-  "y": 0.5
+  "y": 0.25
   matrix:
   - 6
   - 0
   oryx: 26
 - x: 9.2
-  "y": 0.25
+  "y": 0.125
   matrix:
   - 6
   - 1
   oryx: 27
 - x: 10.2
-  "y": 0
+  "y": 0.0
   matrix:
   - 6
   - 2
   oryx: 28
 - x: 11.2
-  "y": 0.25
+  "y": 0.125
   matrix:
   - 6
   - 3
   oryx: 29
 - x: 12.2
-  "y": 0.5
+  "y": 0.25
   matrix:
   - 6
   - 4
   oryx: 30
 - x: 13.2
-  "y": 0.5
+  "y": 0.25
   matrix:
   - 6
   - 5
   oryx: 31
 - x: 0
-  "y": 1.5
+  "y": 1.25
   matrix:
   - 1
   - 1
   oryx: 6
 - x: 1
-  "y": 1.5
+  "y": 1.25
   matrix:
   - 1
   - 2
   oryx: 7
 - x: 2
-  "y": 1.25
+  "y": 1.125
   matrix:
   - 1
   - 3
   oryx: 8
 - x: 3
-  "y": 1
+  "y": 1.0
   matrix:
   - 1
   - 4
   oryx: 9
 - x: 4
-  "y": 1.25
+  "y": 1.125
   matrix:
   - 1
   - 5
   oryx: 10
 - x: 5
-  "y": 1.5
+  "y": 1.25
   matrix:
   - 1
   - 6
   oryx: 11
 - x: 8.2
-  "y": 1.5
+  "y": 1.25
   matrix:
   - 7
   - 0
   oryx: 32
 - x: 9.2
-  "y": 1.25
+  "y": 1.125
   matrix:
   - 7
   - 1
   oryx: 33
 - x: 10.2
-  "y": 1
+  "y": 1.0
   matrix:
   - 7
   - 2
   oryx: 34
 - x: 11.2
-  "y": 1.25
+  "y": 1.125
   matrix:
   - 7
   - 3
   oryx: 35
 - x: 12.2
-  "y": 1.5
+  "y": 1.25
   matrix:
   - 7
   - 4
   oryx: 36
 - x: 13.2
-  "y": 1.5
+  "y": 1.25
   matrix:
   - 7
   - 5
   oryx: 37
 - x: 0
-  "y": 2.5
+  "y": 2.25
   matrix:
   - 2
   - 1
   oryx: 12
 - x: 1
-  "y": 2.5
+  "y": 2.25
   matrix:
   - 2
   - 2
   oryx: 13
 - x: 2
-  "y": 2.25
+  "y": 2.125
   matrix:
   - 2
   - 3
   oryx: 14
 - x: 3
-  "y": 2
+  "y": 2.0
   matrix:
   - 2
   - 4
   oryx: 15
 - x: 4
-  "y": 2.25
+  "y": 2.125
   matrix:
   - 2
   - 5
   oryx: 16
 - x: 5
-  "y": 2.5
+  "y": 2.25
   matrix:
   - 2
   - 6
   oryx: 17
 - x: 8.2
-  "y": 2.5
+  "y": 2.25
   matrix:
   - 8
   - 0
   oryx: 38
 - x: 9.2
-  "y": 2.25
+  "y": 2.125
   matrix:
   - 8
   - 1
   oryx: 39
 - x: 10.2
-  "y": 2
+  "y": 2.0
   matrix:
   - 8
   - 2
   oryx: 40
 - x: 11.2
-  "y": 2.25
+  "y": 2.125
   matrix:
   - 8
   - 3
   oryx: 41
 - x: 12.2
-  "y": 2.5
+  "y": 2.25
   matrix:
   - 8
   - 4
   oryx: 42
 - x: 13.2
-  "y": 2.5
+  "y": 2.25
   matrix:
   - 8
   - 5
   oryx: 43
 - x: 0
-  "y": 3.5
+  "y": 3.25
   matrix:
   - 3
   - 1
   oryx: 18
 - x: 1
-  "y": 3.5
+  "y": 3.25
   matrix:
   - 3
   - 2
   oryx: 19
 - x: 2
-  "y": 3.25
+  "y": 3.125
   matrix:
   - 3
   - 3
   oryx: 20
 - x: 3
-  "y": 3
+  "y": 3.0
   matrix:
   - 3
   - 4
   oryx: 21
 - x: 4
-  "y": 3.25
+  "y": 3.125
   matrix:
   - 3
   - 5
   oryx: 22
 - x: 5
-  "y": 3.5
+  "y": 3.25
   matrix:
   - 4
   - 4
   oryx: 23
 - x: 8.2
-  "y": 3.5
+  "y": 3.25
   matrix:
   - 10
   - 2
   oryx: 44
 - x: 9.2
-  "y": 3.25
+  "y": 3.125
   matrix:
   - 9
   - 1
   oryx: 45
 - x: 10.2
-  "y": 3
+  "y": 3.0
   matrix:
   - 9
   - 2
   oryx: 46
 - x: 11.2
-  "y": 3.25
+  "y": 3.125
   matrix:
   - 9
   - 3
   oryx: 47
 - x: 12.2
-  "y": 3.5
+  "y": 3.25
   matrix:
   - 9
   - 4
   oryx: 48
 - x: 13.2
-  "y": 3.5
+  "y": 3.25
   matrix:
   - 9
   - 5
   oryx: 49
 - x: 5
-  "y": 4.5
+  "y": 4.25
   matrix:
   - 5
   - 0
   oryx: 24
 - x: 6
-  "y": 4.75
+  "y": 4.375
   matrix:
   - 5
   - 1
   oryx: 25
 - x: 7.2
-  "y": 4.75
+  "y": 4.375
   matrix:
   - 11
   - 5
   oryx: 50
 - x: 8.2
-  "y": 4.5
+  "y": 4.25
   matrix:
   - 11
   - 6
