@@ -1,0 +1,31 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require "bundler/setup"
+require "optparse"
+require_relative "../lib/mk_viewer"
+
+options = {}
+OptionParser.new do |parser|
+  parser.banner = "Usage: mk_viewer [options]"
+  parser.on("--config PATH", "Keyboard config (default: ~/.config/mk_viewer/keyboards.yml, then the bundled one)") { |path| options[:config] = path }
+  parser.on("--list", "List HID devices and how each one matches, then exit") { options[:list] = true }
+end.parse!
+
+config = MkViewer::Config.load(options[:config])
+
+if options[:list]
+  MkViewer::HidDevice.all.each do |device|
+    profile = config.profile_for(device)
+    used = profile && MkViewer::Session.protocol_class(profile).interface?(device)
+    status = used ? "→ #{profile.name} (#{profile.protocol})" : profile ? "(#{profile.name}, other interface)" : "-"
+    puts format("%-14s %-9s %04x:%04x  %-30s %s", device.path, device.transport, device.vendor_id, device.product_id, device.name, status)
+  end
+  exit
+end
+
+require_relative "../lib/mk_viewer/window"
+manager = MkViewer::Manager.new(config).start
+exit_status = MkViewer::Window.new(manager).run
+manager.stop
+exit(exit_status || 0)

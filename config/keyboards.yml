@@ -1,0 +1,27 @@
+# Every keyboard mk_viewer should recognise. See README.md for how to add one.
+#
+# match: `name` is a case-insensitive substring of the Bluetooth name or USB
+# product string. `vendor_id`/`product_id` also work, but ZMK boards all share
+# 0x1D50:0x615E by default, so use the name for those.
+keyboards:
+  - id: kibard
+    name: Kibård
+    match:
+      name: kibard
+    protocol: zmk_layer_status
+    layout: layouts/kibard.yml
+    keymap:
+      type: zmk
+      path: ~/Development/kibård/config/kibard.keymap
+      labels: ~/Development/kibård/tools/keymap-drawer.yaml
+
+  - id: voyager
+    name: ZSA Voyager
+    match:
+      vendor_id: 0x3297
+      product_id: 0x1977
+    protocol: oryx
+    layout: layouts/voyager.yml
+    keymap:
+      # The USB serial ("layout/revision") says which Oryx revision is flashed.
+      type: oryx
