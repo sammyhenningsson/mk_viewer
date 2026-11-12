@@ -11,7 +11,10 @@ module MkViewer
     LINGER = 0.22 # seconds a key stays lit after release: tap-holds send press and release together
 
     ViewKey = Struct.new(:x, :y, :legend, :hold, :shifted, :inherited, :heat, keyword_init: true)
-    View = Struct.new(:title, :transport, :layer, :layer_names, :keys, :message, keyword_init: true)
+    View = Struct.new(:title, :transport, :layer, :layer_names, :keys, :message, :batteries, keyword_init: true)
+
+    BATTERY_POLL = 60 # seconds between battery reads; levels change slowly
+    BATTERY_RETRY = 10 # seconds before trying again when no level could be read
 
     attr_reader :profile, :device, :error, :last_activity
 
@@ -19,7 +22,8 @@ module MkViewer
       PROTOCOLS.fetch(profile.protocol) { raise Error, "unknown protocol #{profile.protocol.inspect}" }
     end
 
-    def initialize(profile, device, clock: -> { Process.clock_gettime(Process::CLOCK_MONOTONIC) })
+    def initialize(profile, device, clock: -> { Process.clock_gettime(Process::CLOCK_MONOTONIC) },
+                   battery: Battery.method(:levels))
       @profile = profile
       @device = device
       @clock = clock
@@ -28,6 +32,8 @@ module MkViewer
       @down = Set.new
       @released = {}
       @last_activity = 0
+      @battery = battery
+      @batteries = []
       @protocol = self.class.protocol_class(profile).new(self)
     end
 
@@ -63,12 +69,12 @@ module MkViewer
         load_keymap
         read_loop
       end
+      @battery_thread = Thread.new { battery_loop } if device.bluetooth?
       self
     end
 
     def stop
-      @thread&.kill
-      @thread&.join(1)
+      [@thread, @battery_thread].compact.each(&:kill).each { |thread| thread.join(1) }
     end
 
     def view(highlight: true)
@@ -77,7 +83,8 @@ module MkViewer
         @released.delete_if { |_, time| now - time > LINGER }
         names = @keymap ? @keymap.layers.map(&:name) : []
         View.new(title: profile.name, transport: device.transport, layer: @layer, layer_names: names,
-                 keys: view_keys(now, highlight), message: @keymap ? nil : @keymap_error || "Loading keymap…")
+                 keys: view_keys(now, highlight), message: @keymap ? nil : @keymap_error || "Loading keymap…",
+                 batteries: @batteries)
       end
     end
 
@@ -104,6 +111,16 @@ module MkViewer
     rescue StandardError => e
       # Still report the layer number and connection if the keymap can't load.
       @lock.synchronize { @keymap_error = "Keymap unavailable: #{e.message}" }
+    end
+
+    def battery_loop
+      Thread.current.report_on_exception = false
+      sleep 2 # BlueZ may still be resolving the keyboard's services
+      loop do
+        levels = @battery.call(device.uniq, labels: profile.batteries)
+        @lock.synchronize { @batteries = levels }
+        sleep levels.empty? ? BATTERY_RETRY : BATTERY_POLL
+      end
     end
 
     def read_loop

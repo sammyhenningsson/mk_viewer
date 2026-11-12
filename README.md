@@ -72,11 +72,24 @@ Add an entry to `config/keyboards.yml`, or copy that file to
         type: zmk
         path: ~/Development/corne/config/corne_choc_pro.keymap
         labels: ~/path/to/keymap-drawer.yaml   # optional legends
+      batteries: [Left, Right]   # optional names for the battery levels
 
 `labels:` is a [keymap-drawer](https://github.com/caksoylar/keymap-drawer) config.
 Each `raw_binding_map` entry is either a string or `{t: tap, h: hold, s: shifted}`.
 `s` is drawn at the top of the key in the accent color, which suits a key's adaptive
 rules: `"&AS_D": {t: "D", s: "S→C H→Å"}`.
+
+### Battery levels
+
+Over Bluetooth, the header shows each battery level the keyboard reports, read
+from BlueZ with `busctl` every minute. ZMK reports only the central half's level
+unless the central's `.conf` has:
+
+    CONFIG_ZMK_SPLIT_BLE_CENTRAL_BATTERY_LEVEL_FETCHING=y
+    CONFIG_ZMK_SPLIT_BLE_CENTRAL_BATTERY_LEVEL_PROXY=y
+
+The central comes first, then each peripheral. Without `batteries:` they're
+named "Central" and "Peripheral 0" and so on. Nothing is shown over USB.
 
 A layout lists `x`/`y` for each key in keymap order, in key-width units. Oryx
 boards also need `matrix: [row, col]` and `oryx:` (the key's index in Oryx's data).

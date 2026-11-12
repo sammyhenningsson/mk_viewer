@@ -20,7 +20,8 @@ module MkViewer
     def position_for_matrix(row, col) = keys.index { |key| key.matrix == [row, col] }
   end
 
-  Profile = Struct.new(:id, :name, :match, :protocol, :layout, :keymap, keyword_init: true) do
+  # batteries: optional names for the keyboard's battery levels, in the order it reports them.
+  Profile = Struct.new(:id, :name, :match, :protocol, :layout, :keymap, :batteries, keyword_init: true) do
     def matches?(device)
       return false if match.empty?
 
@@ -59,7 +60,7 @@ module MkViewer
       base = File.dirname(path)
       @profiles = YAML.safe_load_file(path).fetch("keyboards").map do |entry|
         Profile.new(id: entry.fetch("id"), name: entry["name"] || entry["id"], match: entry.fetch("match"),
-                    protocol: entry.fetch("protocol"), keymap: entry.fetch("keymap"),
+                    protocol: entry.fetch("protocol"), keymap: entry.fetch("keymap"), batteries: entry["batteries"],
                     layout: Layout.load(File.expand_path(entry.fetch("layout"), base)))
       end
     end

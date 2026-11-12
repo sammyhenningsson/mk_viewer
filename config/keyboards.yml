@@ -10,6 +10,8 @@ keyboards:
       name: kibard
     protocol: zmk_layer_status
     layout: layouts/kibard.yml
+    # The left half is the central; the right half's level is proxied after it.
+    batteries: [Left, Right]
     keymap:
       type: zmk
       path: ~/Development/kibård/config/kibard.keymap

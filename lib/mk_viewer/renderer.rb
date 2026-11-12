@@ -19,6 +19,7 @@ module MkViewer
     MARGIN = 20
     HEADER = 68
     PILL_ROW = 28
+    BATTERY_LOW = 20 # percent at or below which a level is drawn in the accent color
     SHIFTED_MAX = 0.5 # the most of a key's height its shifted text may take, at the top
     SHIFTED_MAX_WITH_HOLD = 0.3 # the same, when the key also has a hold legend to fit
 
@@ -54,7 +55,40 @@ module MkViewer
       paint(cr, @palette.muted)
       others = connected.empty? ? "" : "  ·  also connected: #{connected.join(', ')}"
       text(cr, "#{view.title} (#{view.transport})#{others}", MARGIN, 44, width - MARGIN * 2, 12, center: false)
+      draw_batteries(cr, width, view.batteries || [])
       draw_layer_strip(cr, width, view)
+    end
+
+    # Right-aligned at the top: "Left ▭ 74%   Right ▭ 93%".
+    def draw_batteries(cr, width, levels)
+      x = width - MARGIN
+      levels.reverse_each do |level|
+        low = level.percent <= BATTERY_LOW
+        percent = pango(cr, "#{level.percent}%", 13, true)
+        x -= percent.pixel_size[0]
+        paint(cr, low ? @palette.accent : @palette.text)
+        place(cr, percent, x, 17)
+        x -= 30
+        draw_battery_icon(cr, x, 20, level.percent, low)
+        name = pango(cr, level.name.to_s, 12, false)
+        x -= 6 + name.pixel_size[0]
+        paint(cr, @palette.muted)
+        place(cr, name, x, 18)
+        x -= 20
+      end
+    end
+
+    # A 22×11 battery outline with a nub, filled to the level.
+    def draw_battery_icon(cr, x, y, percent, low)
+      paint(cr, low ? @palette.accent : @palette.muted)
+      cr.line_width = 1.2
+      rounded(cr, x + 0.5, y + 0.5, 22, 11, 2)
+      cr.stroke
+      cr.rectangle(x + 23, y + 3.5, 2, 5)
+      cr.fill
+      paint(cr, low ? @palette.accent : @palette.text)
+      cr.rectangle(x + 2.5, y + 2.5, 18 * percent.clamp(0, 100) / 100.0, 7)
+      cr.fill
     end
 
     # All layers, wrapping onto more rows if needed, with the active one filled in.
