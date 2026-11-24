@@ -1,5 +1,13 @@
 # frozen_string_literal: true
 
+# Cairo loads the red-colors gem, which builds all of matplotlib's colormaps on
+# load: about half a second of startup for something nothing here uses. Marking
+# that file as already loaded skips it; if a gem update moves it, this does nothing.
+if (colors = Gem.loaded_specs["red-colors"])
+  colormaps = File.join(colors.full_gem_path, "lib/colors/colormap_data.rb")
+  $LOADED_FEATURES << colormaps if File.exist?(colormaps)
+end
+
 require "gtk4"
 require_relative "renderer"
 require_relative "keymap_dialog"
