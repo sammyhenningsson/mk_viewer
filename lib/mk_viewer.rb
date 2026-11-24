@@ -5,6 +5,7 @@ module MkViewer
   Error = Class.new(StandardError)
 end
 
+require_relative "mk_viewer/source"
 require_relative "mk_viewer/keycodes"
 require_relative "mk_viewer/keymap/model"
 require_relative "mk_viewer/keymap/zmk"

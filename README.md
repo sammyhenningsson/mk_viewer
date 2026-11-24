@@ -74,6 +74,13 @@ Add an entry to `config/keyboards.yml`, or copy that file to
         labels: ~/path/to/keymap-drawer.yaml   # optional legends
       batteries: [Left, Right]   # optional names for the battery levels
 
+`path:` and `labels:` can also be URLs, such as a GitHub link to the file
+(`https://github.com/you/zmk-config/blob/main/config/corne.keymap`), which is read
+from raw.githubusercontent.com. Only public files work. The file is fetched again
+each time the keyboard connects, and the last copy is kept in
+`~/.cache/mk_viewer/remote/` so it still loads offline. The **Keymap…** dialog
+accepts URLs too.
+
 `labels:` is a [keymap-drawer](https://github.com/caksoylar/keymap-drawer) config.
 Each `raw_binding_map` entry is either a string or `{t: tap, h: hold, s: shifted}`.
 `s` is drawn at the top of the key in the accent color, which suits a key's adaptive

@@ -3,7 +3,7 @@
 require "cgi"
 
 module MkViewer
-  # Asks which keymap file a ZMK keyboard uses. Reports through the block:
+  # Asks which keymap file (a path or URL) a ZMK keyboard uses. Reports through the block:
   # [:use, path], [:later] or [:never]. It isn't attached to the application, so
   # the app's single-letter shortcuts don't fire while typing a filename.
   class KeymapDialog
@@ -27,7 +27,7 @@ module MkViewer
 
     # Checks the file, then saves it, or else explains what's wrong.
     def submit
-      path = File.expand_path(@entry.text.strip)
+      path = Source.expand(@entry.text)
       problem = problem_with(path)
       return @error.text = problem if problem
 
@@ -59,7 +59,7 @@ module MkViewer
       @entry = Gtk::Entry.new
       @entry.hexpand = true
       @entry.text = path.to_s
-      @entry.placeholder_text = "~/zmk-config/config/keyboard.keymap"
+      @entry.placeholder_text = "~/zmk-config/config/keyboard.keymap, or a GitHub link to it"
       @entry.signal_connect("activate") { submit }
       row.append(@entry)
       @browse = Gtk::Button.new(label: "Browse…")
@@ -116,10 +116,12 @@ module MkViewer
     end
 
     def problem_with(path)
-      return "No file at #{path}" unless File.file?(path)
+      return "No file at #{path}" unless Source.remote?(path) || File.file?(path)
 
       layers = Keymap::Zmk.load(path).layers
       "That file has no layers." if layers.empty?
+    rescue Source::FetchError => e
+      e.message
     rescue StandardError => e
       "That doesn't look like a ZMK keymap: #{e.message}"
     end

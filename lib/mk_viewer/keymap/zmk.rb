@@ -11,13 +11,14 @@ module MkViewer
 
       # Optional labels: a keymap-drawer config, whose raw_binding_map is reused
       # so legends match the rendered layer images.
+      # Either may be a path or a URL (see Source).
       def self.load(path, labels: nil)
-        new(File.read(path), labels: labels && File.exist?(labels) ? File.read(labels) : nil).map
+        new(Source.read(path), labels: labels && Source.read_optional(labels)).map
       end
 
       # Key positions [x, y] for a keyboard with no layout file, from how the first
       # layer's bindings are arranged in the file. It can't know the real stagger.
-      def self.geometry(path) = new(File.read(path)).geometry
+      def self.geometry(path) = new(Source.read(path)).geometry
 
       def initialize(source, labels: nil)
         @text = strip_comments(source)

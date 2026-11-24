@@ -34,7 +34,7 @@ module MkViewer
     def load_keymap(device)
       case keymap.fetch("type")
       when "zmk"
-        Keymap::Zmk.load(File.expand_path(keymap.fetch("path")), labels: keymap["labels"] && File.expand_path(keymap["labels"]))
+        Keymap::Zmk.load(keymap.fetch("path"), labels: keymap["labels"])
       when "oryx" then Keymap::Oryx.load(device.uniq, layout)
       else raise Error, "unknown keymap type #{keymap['type'].inspect}"
       end

@@ -4,7 +4,7 @@ require "fileutils"
 require "yaml"
 
 module MkViewer
-  # Remembers what the user chose for each ZMK keyboard, by name: its keymap file,
+  # Remembers what the user chose for each ZMK keyboard, by name: its keymap file or URL,
   # or that they never want to be asked. A board's USB product string is its
   # Bluetooth name with a maker prefix, so both connections share one entry.
   class KeyboardStore
@@ -22,7 +22,7 @@ module MkViewer
     def keymap_for(name) = @lock.synchronize { @entries.dig(self.class.key(name), "keymap") }
     def ignored?(name) = @lock.synchronize { @entries.dig(self.class.key(name), "ignored") == true }
 
-    def assign(name, path) = save(name, { "keymap" => File.expand_path(path) })
+    def assign(name, path) = save(name, { "keymap" => Source.expand(path) })
     def ignore(name) = save(name, { "ignored" => true })
 
     private
